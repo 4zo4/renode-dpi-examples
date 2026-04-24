@@ -1,0 +1,5 @@
+# Perform a burst of writes and reads
+echo "Starting memory test loop..."
+python "for i in range(14): monitor.Parse('mem WriteDoubleWord ' + hex(i*4) + ' ' + hex(0x12345678 + i))"
+python "for i in range(14): monitor.Parse('mem ReadDoubleWord ' + hex(i*4))"
+echo "Test loop finished."

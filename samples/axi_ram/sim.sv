@@ -17,13 +17,14 @@
 
 import renode_pkg::renode_runtime;
 
-module sim;
-  parameter int unsigned AXIDataWidth = 64;
-  parameter int ClockPeriod = 100;
-  parameter int RenodeToCosimCount = 1;
-  parameter int CosimToRenodeCount = 0;
-
-  logic clk = 1;
+module sim #(
+  parameter int unsigned AXIDataWidth = 32,
+  parameter int ClockPeriod = 100,
+  parameter int RenodeToCosimCount = 1,
+  parameter int CosimToRenodeCount = 0
+)(
+  input clk
+);
 
   renode_runtime runtime = new(RenodeToCosimCount, CosimToRenodeCount);
   renode #(
@@ -35,31 +36,32 @@ module sim;
       .renode_outputs()
   );
 
-  renode_axi_if #(.AddressWidth(20), .DataWidth(AXIDataWidth)) axi (clk);
+  renode_axi_if #(.AddressWidth(32), .DataWidth(AXIDataWidth)) axi (clk);
   renode_axi_manager renode_axi_manager (
       .runtime(runtime),
       .bus(axi)
   );
 
   initial begin
+    $timeformat(-9, 9, "s", 12);
     runtime.connect_plus_args();
-    renode.reset();
+    $display("[%t][V-LOG] Waiting for messages", $realtime);
+    runtime.connection.log(renode_pkg::LogInfo, "AXI RAM simulation started");
   end
 
   always @(posedge clk) begin
-    // The receive method blocks execution of the simulation.
-    // It waits until receive a message from Renode.
-    renode.receive_and_handle_message();
-    if (!runtime.is_connected()) $finish;
+    if (runtime.is_connected()) begin
+      renode.receive_and_handle_message();
+    end else begin
+      $display("[%t][V-LOG] Connection closed, finishing simulation", $realtime);
+    end
   end
-
-  always #(ClockPeriod / 2) clk = ~clk;
 
   axi_ram #(.DATA_WIDTH(AXIDataWidth)) dut (
       .clk(clk),
       .rst(~axi.areset_n),
       .s_axi_awid(axi.awid),
-      .s_axi_awaddr(axi.awaddr),
+      .s_axi_awaddr(axi.awaddr[19:0]),
       .s_axi_awlen(axi.awlen),
       .s_axi_awsize(axi.awsize),
       .s_axi_awburst(axi.awburst),
@@ -78,7 +80,7 @@ module sim;
       .s_axi_bvalid(axi.bvalid),
       .s_axi_bready(axi.bready),
       .s_axi_arid(axi.arid),
-      .s_axi_araddr(axi.araddr),
+      .s_axi_araddr(axi.araddr[19:0]),
       .s_axi_arlen(axi.arlen),
       .s_axi_arsize(axi.arsize),
       .s_axi_arburst(axi.arburst),

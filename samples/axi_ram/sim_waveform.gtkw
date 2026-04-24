@@ -1,0 +1,17 @@
+[*]
+[*] GTKWave Analyzer Save File
+[*]
+[dumpfile] "sim.vcd"
+[savefile] "sim_waveform.gtkw"
+@28
+TOP.sim.clk
+TOP.sim.axi.areset_n
+@22
+TOP.sim.axi.awvalid
+TOP.sim.axi.awready
+TOP.sim.axi.wdata[31:0]
+@28
+TOP.sim.axi.arvalid
+TOP.sim.axi.arready
+@22
+TOP.sim.axi.rdata[31:0]

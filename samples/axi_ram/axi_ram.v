@@ -146,10 +146,10 @@ reg s_axi_rvalid_pipe_reg = 1'b0;
 // (* RAM_STYLE="BLOCK" *)
 reg [DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
 
-wire [VALID_ADDR_WIDTH-1:0] s_axi_awaddr_valid = s_axi_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] s_axi_araddr_valid = s_axi_araddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] read_addr_valid = read_addr_reg >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] write_addr_valid = write_addr_reg >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
+wire [VALID_ADDR_WIDTH-1:0] s_axi_awaddr_valid = s_axi_awaddr[ADDR_WIDTH-1 : (ADDR_WIDTH - VALID_ADDR_WIDTH)];
+wire [VALID_ADDR_WIDTH-1:0] s_axi_araddr_valid = s_axi_araddr[ADDR_WIDTH-1 : (ADDR_WIDTH - VALID_ADDR_WIDTH)];
+wire [VALID_ADDR_WIDTH-1:0] read_addr_valid     = read_addr_reg[ADDR_WIDTH-1 : (ADDR_WIDTH - VALID_ADDR_WIDTH)];
+wire [VALID_ADDR_WIDTH-1:0] write_addr_valid    = write_addr_reg[ADDR_WIDTH-1 : (ADDR_WIDTH - VALID_ADDR_WIDTH)];
 
 assign s_axi_awready = s_axi_awready_reg;
 assign s_axi_wready = s_axi_wready_reg;
@@ -199,7 +199,7 @@ always @* begin
                 write_id_next = s_axi_awid;
                 write_addr_next = s_axi_awaddr;
                 write_count_next = s_axi_awlen;
-                write_size_next = s_axi_awsize < $clog2(STRB_WIDTH) ? s_axi_awsize : $clog2(STRB_WIDTH);
+                write_size_next = s_axi_awsize < 3'($clog2(STRB_WIDTH)) ? s_axi_awsize : 3'($clog2(STRB_WIDTH));
                 write_burst_next = s_axi_awburst;
 
                 s_axi_awready_next = 1'b0;
@@ -245,6 +245,7 @@ always @* begin
                 write_state_next = WRITE_STATE_RESP;
             end
         end
+        default: write_state_next = write_state_reg;
     endcase
 end
 
@@ -301,7 +302,7 @@ always @* begin
                 read_id_next = s_axi_arid;
                 read_addr_next = s_axi_araddr;
                 read_count_next = s_axi_arlen;
-                read_size_next = s_axi_arsize < $clog2(STRB_WIDTH) ? s_axi_arsize : $clog2(STRB_WIDTH);
+                read_size_next = s_axi_arsize < 3'($clog2(STRB_WIDTH)) ? s_axi_arsize : 3'($clog2(STRB_WIDTH));
                 read_burst_next = s_axi_arburst;
 
                 s_axi_arready_next = 1'b0;
@@ -330,6 +331,7 @@ always @* begin
                 read_state_next = READ_STATE_BURST;
             end
         end
+        default: write_state_next = write_state_reg;
     endcase
 end
 

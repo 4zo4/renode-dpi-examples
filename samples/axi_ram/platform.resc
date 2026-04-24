@@ -1,4 +1,10 @@
 using sysbus
-mach create
+mach create "CoSimulatedAxiRam"
 
+#logLevel -1
+#logFile @/home/purple/renode_crash.log
 machine LoadPlatformDescription $ORIGIN/platform.repl
+sysbus.cpu PC 0x0
+sysbus.cpu IsHalted true
+# display <main port> <sender port> <ip addr>
+mem ConnectionParameters
